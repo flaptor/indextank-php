@@ -229,6 +229,16 @@ class IndexClient {
         api_call('PUT', $this->variables_url(), array("docid" => $docid, "variables" => convert_to_map($variables)));
     }
 
+    public function update_categories($docid, $categories) {
+        /*
+         * Updates the category values of the document for the given docid.
+         * Arguments:
+         *     docid: unique document identifier
+         *     categories: map string -> string where each key is a category name pointing to its value
+         */
+        api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => convert_to_map($categories)));
+    }
+
     public function promote($docid, $query) {
         /*
          * Makes the given docid the top result of the given query.
@@ -259,13 +269,14 @@ class IndexClient {
         return $res->response;
     }
 
-    public function search($query, $start=NULL, $len=NULL, $scoring_function=NULL, $snippet_fields=NULL, $fetch_fields=NULL) {
+    public function search($query, $start=NULL, $len=NULL, $scoring_function=NULL, $snippet_fields=NULL, $fetch_fields=NULL, $category_filters=NULL) {
         $params = array("q" => $query);
         if ($start != NULL) { $params["start"] = $start; }
         if ($len != NULL) { $params["len"] = $len; }
         if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function; }
         if ($snippet_fields != NULL) { $params["snippets"] = $snippet_fields; }
         if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields; }
+        if ($category_filters != NULL) { $params["category_filters"] = $category_filters; }
         try {
             $res = api_call('GET', $this->search_url(), $params);
             return $res->response;
@@ -293,6 +304,7 @@ class IndexClient {
 
     private function docs_url()        { return $this->index_url . "/docs"; }
     private function variables_url()   { return $this->index_url . "/docs/variables"; }
+    private function categories_url()   { return $this->index_url . "/docs/categories"; }
     private function promote_url()     { return $this->index_url . "/promote"; }
     private function search_url()      { return $this->index_url . "/search"; }
     private function functions_url()   { return $this->index_url . "/functions"; }
