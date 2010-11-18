@@ -274,12 +274,12 @@ class IndexClient {
         if ($start != NULL) { $params["start"] = $start; }
         if ($len != NULL) { $params["len"] = $len; }
         if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function; }
-        if ($snippet_fields != NULL) { $params["snippets"] = $snippet_fields; }
+        if ($snippet_fields != NULL) { $params["snippet"] = $snippet_fields; }
         if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields; }
         if ($category_filters != NULL) { $params["category_filters"] = $category_filters; }
         try {
             $res = api_call('GET', $this->search_url(), $params);
-            return $res->response;
+            return json_decode($res->response);
         } catch (HttpException $e) {
             if ($e->getCode() == 400) {
                 throw new InvalidQuery($e->getMessage());
