@@ -197,11 +197,13 @@ class IndexClient {
         /*
          * Indexes a document for the given docid and fields.
          * Arguments:
-         *     docid: unique document identifier
+         *     docid: unique document identifier. A String no longer than 1024 bytes. Can not be NULL
          *     field: map with the document fields
          *     variables (optional): map integer -> float with values for variables that can
          *                           later be used in scoring functions during searches.
          */
+        if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
+        if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
         $data = array("docid" => $docid, "fields" => $fields);
         if ($variables != NULL) {
             $data["variables"] = convert_to_map($variables);
