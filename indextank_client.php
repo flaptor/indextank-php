@@ -288,6 +288,19 @@ class IndexClient {
         return json_decode($res->response);
     }
 
+
+    /*
+     * Performs a search.
+     *
+     * @param variables: An array with 'query variables'. Example: array( 0 => 3, 1 => 34);
+     * @param docvar_filters: An array with filters for document variables. 
+     *     Example: array(0 => array(array(1,4), array(6, 9), array(16,NULL)))
+     *     Document variable 0 should be between 1 and 4 OR 6 and 9 OR greater than 16
+     * @param function_filters: An array with filters for function scores. 
+     *     Example: array(2 => array(array(2,6), array(7, 11), array(15,NULL)))
+     *     Scoring function 2 must return a value between 2 and 6 OR 7 and 11 OR greater than 15 for documents matching this query.
+     *
+     */
     public function search($query, $start=NULL, $len=NULL, $scoring_function=NULL, $snippet_fields=NULL, $fetch_fields=NULL, $category_filters=NULL, $variables=NULL, $docvar_filters=NULL, $function_filters=NULL) {
         $params = array("q" => $query);
         if ($start != NULL) { $params["start"] = $start; }
