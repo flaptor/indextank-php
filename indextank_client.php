@@ -22,6 +22,23 @@ function convert_to_map($array_object) {
     return $result;
 }
 
+/*
+ * Converts an array of 2 elements (which can be NULL) to a colon-separated string containing those elements.
+ * NULL elements are replaced by '*'
+ *
+ * Examples: 
+ *     map_range(array(2,4)) => "2:4";
+ *     map_range(array(NULL,3)) => "*:3";
+ *     map_range(array(5,NULL)) => "5:*";
+ *     map_range(array(NULL,NULL)) => "*:*";
+ *
+ *
+ * @param val: an array of 2 elements.
+ */
+function map_range($val) {
+    return sprintf("%s:%s",($val[0] == NULL ? "*": $val[0]), ($val[1] == NULL ? "*": $val[1]));
+}
+
 function api_call($method, $url, $params=array()) {
     $splits = parse_url($url);
     if (! empty($splits['scheme'])) { $scheme = $splits['scheme'].'://'; } else { throw new InvalidUrl("[".$url."]"); }
@@ -268,10 +285,10 @@ class IndexClient {
 
     public function list_functions() {
         $res = api_call('GET', $this->functions_url());
-        return $res->response;
+        return json_decode($res->response);
     }
 
-    public function search($query, $start=NULL, $len=NULL, $scoring_function=NULL, $snippet_fields=NULL, $fetch_fields=NULL, $category_filters=NULL) {
+    public function search($query, $start=NULL, $len=NULL, $scoring_function=NULL, $snippet_fields=NULL, $fetch_fields=NULL, $category_filters=NULL, $variables=NULL, $docvar_filters=NULL, $function_filters=NULL) {
         $params = array("q" => $query);
         if ($start != NULL) { $params["start"] = $start; }
         if ($len != NULL) { $params["len"] = $len; }
@@ -279,6 +296,29 @@ class IndexClient {
         if ($snippet_fields != NULL) { $params["snippet"] = $snippet_fields; }
         if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields; }
         if ($category_filters != NULL) { $params["category_filters"] = $category_filters; }
+        if ($variables) {
+            foreach( $variables as $k => $v)
+            {
+                $params["var".strval($k)] = $v;
+            }
+        }
+
+        if ($docvar_filters){
+            // $docvar_filters is something like
+            // { 3 => [ (1, 3), (5, NULL) ]} to filter_docvar3 => 1:3,5:*
+            foreach( $docvar_filters as $k => $v){
+                $params["filter_docvar".strval($k)] = implode(array_map( 'map_range', $v), ",");
+            }
+        }
+        
+        if ($function_filters){
+            // $function_filters is something like
+            // { 2 => [ (1, 4), (7, NULL) ]} to filter_function2 => 1:4,7:*
+            foreach( $docvar_filters as $k => $v){
+                $params["filter_function".strval($k)] = implode(array_map( 'map_range', $v), ",");
+            }
+        }
+
         try {
             $res = api_call('GET', $this->search_url(), $params);
             return json_decode($res->response);
@@ -311,9 +351,6 @@ class IndexClient {
     private function search_url()      { return $this->index_url . "/search"; }
     private function functions_url()   { return $this->index_url . "/functions"; }
     private function function_url($n)  { return $this->index_url . "/functions/". $n; }
-
-
-
     
 }
 
