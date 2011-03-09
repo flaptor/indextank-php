@@ -207,7 +207,8 @@ class IndexClient {
     }
 
     public function delete_index() {
-        api_call('DELETE', $this->index_url);
+        $res = api_call('DELETE', $this->index_url);
+        return $res->status;
     }
 
     public function add_document($docid, $fields, $variables = NULL) {
@@ -215,18 +216,55 @@ class IndexClient {
          * Indexes a document for the given docid and fields.
          * Arguments:
          *     docid: unique document identifier. A String no longer than 1024 bytes. Can not be NULL
-         *     field: map with the document fields
+         *     fields: map with the document fields
          *     variables (optional): map integer -> float with values for variables that can
          *                           later be used in scoring functions during searches.
          */
-        if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
-        if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
-        $data = array("docid" => $docid, "fields" => $fields);
-        if ($variables != NULL) {
-            $data["variables"] = convert_to_map($variables);
-        }
-        api_call('PUT', $this->docs_url(), $data);
+        $res =  api_call('PUT', $this->docs_url(), $this->as_document($docid, $fields, $variables));
+        return $res->status;
     }
+
+
+    public function add_documents($documents=array()) {
+        /*
+         * Indexes an array of documents. Each element (document) on the array needs to be an
+         * array, with 'docid', 'fields' and optionally 'variables' keys.
+         * The semantic is the same as IndexClient->add_document();
+         * Arguments:
+         *     documents: an array of arrays, each representing a document
+         */
+        $data = array();
+        foreach ($documents as $i => $doc_data) {
+            try {
+                // make sure docid is set
+                if (!array_key_exists("docid", $doc_data)) {
+                    throw new InvalidArgumentException("document $i lacks 'docid'");
+                }
+                $docid = $doc_data['docid'];
+                
+                // make sure fields is set
+                if (!array_key_exists("fields", $doc_data)) {
+                    throw new InvalidArgumentException("document $i lacks 'fields'");
+                }
+                $fields = $doc_data['fields'];
+                
+                // set $variables
+                if (!array_key_exists("variables", $doc_data)) {
+                    $variables = NULL;
+                } else {
+                    $variables = $doc_data['variables'];
+                }
+
+                $data[] = $this->as_document($docid, $fields, $variables);
+            } catch (InvalidArgumentException $iae) {
+                throw new InvalidArgumentException("while processing document $i: " . $iae->getMessage());
+            }
+        }
+
+        $res = api_call('PUT', $this->docs_url(), $data);
+        return json_decode($res->response);
+    }
+
 
     public function delete_document($docid) {
         /*
@@ -234,7 +272,8 @@ class IndexClient {
          * Arguments:
          *     docid: unique document identifier
          */
-        api_call('DELETE', $this->docs_url(), array("docid" => $docid));
+        $res = api_call('DELETE', $this->docs_url(), array("docid" => $docid));
+        return $res->status;
     }
 
     public function update_variables($docid, $variables) {
@@ -245,7 +284,8 @@ class IndexClient {
          *     variables: map integer -> float with values for variables that can
          *                later be used in scoring functions during searches.
          */
-        api_call('PUT', $this->variables_url(), array("docid" => $docid, "variables" => convert_to_map($variables)));
+        $res = api_call('PUT', $this->variables_url(), array("docid" => $docid, "variables" => convert_to_map($variables)));
+        return $res->status;
     }
 
     public function update_categories($docid, $categories) {
@@ -255,7 +295,8 @@ class IndexClient {
          *     docid: unique document identifier
          *     categories: map string -> string where each key is a category name pointing to its value
          */
-        api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => convert_to_map($categories)));
+        $res = api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => convert_to_map($categories)));
+        return $res->status;
     }
 
     public function promote($docid, $query) {
@@ -265,12 +306,14 @@ class IndexClient {
          *     docid: unique document identifier
          *     query: the query for which to promote the document
          */
-        api_call('PUT', $this->promote_url(), array("docid" => $docid, "query" => $query));
+        $res = api_call('PUT', $this->promote_url(), array("docid" => $docid, "query" => $query));
+        return $res->status;
     }
 
     public function add_function($function_index, $definition) {
         try {
-            api_call('PUT', $this->function_url($function_index), array("definition" => $definition));
+            $res = api_call('PUT', $this->function_url($function_index), array("definition" => $definition));
+            return $res->status;
         } catch (HttpException $e) {
             if ($e->getCode() == 400) {
                 throw new InvalidDefinition($e->getMessage());
@@ -280,7 +323,8 @@ class IndexClient {
     }
 
     public function delete_function($function_index) {
-        api_call('DELETE', $this->function_url($function_index));
+        $res = api_call('DELETE', $this->function_url($function_index));
+        return $res->status;
     }
 
     public function list_functions() {
@@ -355,6 +399,19 @@ class IndexClient {
         $res = api_call('GET', $this->index_url, array());
         $this->metadata = json_decode($res->response);
         return $this->metadata;
+    }
+
+    /*
+     * Creates a 'document', useful for IndexClient->add_document and IndexClient->add_documents
+     */
+    private function as_document($docid, $fields, $variables = NULL){
+        if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
+        if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
+        $data = array("docid" => $docid, "fields" => $fields);
+        if ($variables != NULL) {
+            $data["variables"] = convert_to_map($variables);
+        }
+        return $data;
     }
 
     private function docs_url()        { return $this->index_url . "/docs"; }
