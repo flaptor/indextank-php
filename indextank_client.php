@@ -207,7 +207,8 @@ class IndexClient {
     }
 
     public function delete_index() {
-        api_call('DELETE', $this->index_url);
+        $res = api_call('DELETE', $this->index_url);
+        return $res->status;
     }
 
     public function add_document($docid, $fields, $variables = NULL) {
@@ -219,7 +220,8 @@ class IndexClient {
          *     variables (optional): map integer -> float with values for variables that can
          *                           later be used in scoring functions during searches.
          */
-        api_call('PUT', $this->docs_url(), $this->as_document($docid, $fields, $variables));
+        $res =  api_call('PUT', $this->docs_url(), $this->as_document($docid, $fields, $variables));
+        return $res->status;
     }
 
 
@@ -259,7 +261,8 @@ class IndexClient {
             }
         }
 
-        api_call('PUT', $this->docs_url(), $data);
+        $res = api_call('PUT', $this->docs_url(), $data);
+        return json_decode($res->response);
     }
 
 
@@ -269,7 +272,8 @@ class IndexClient {
          * Arguments:
          *     docid: unique document identifier
          */
-        api_call('DELETE', $this->docs_url(), array("docid" => $docid));
+        $res = api_call('DELETE', $this->docs_url(), array("docid" => $docid));
+        return $res->status;
     }
 
     public function update_variables($docid, $variables) {
@@ -280,7 +284,8 @@ class IndexClient {
          *     variables: map integer -> float with values for variables that can
          *                later be used in scoring functions during searches.
          */
-        api_call('PUT', $this->variables_url(), array("docid" => $docid, "variables" => convert_to_map($variables)));
+        $res = api_call('PUT', $this->variables_url(), array("docid" => $docid, "variables" => convert_to_map($variables)));
+        return $res->status;
     }
 
     public function update_categories($docid, $categories) {
@@ -290,7 +295,8 @@ class IndexClient {
          *     docid: unique document identifier
          *     categories: map string -> string where each key is a category name pointing to its value
          */
-        api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => convert_to_map($categories)));
+        $res = api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => convert_to_map($categories)));
+        return $res->status;
     }
 
     public function promote($docid, $query) {
@@ -300,12 +306,14 @@ class IndexClient {
          *     docid: unique document identifier
          *     query: the query for which to promote the document
          */
-        api_call('PUT', $this->promote_url(), array("docid" => $docid, "query" => $query));
+        $res = api_call('PUT', $this->promote_url(), array("docid" => $docid, "query" => $query));
+        return $res->status;
     }
 
     public function add_function($function_index, $definition) {
         try {
-            api_call('PUT', $this->function_url($function_index), array("definition" => $definition));
+            $res = api_call('PUT', $this->function_url($function_index), array("definition" => $definition));
+            return $res->status;
         } catch (HttpException $e) {
             if ($e->getCode() == 400) {
                 throw new InvalidDefinition($e->getMessage());
@@ -315,7 +323,8 @@ class IndexClient {
     }
 
     public function delete_function($function_index) {
-        api_call('DELETE', $this->function_url($function_index));
+        $res = api_call('DELETE', $this->function_url($function_index));
+        return $res->status;
     }
 
     public function list_functions() {
