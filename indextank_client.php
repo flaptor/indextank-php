@@ -216,7 +216,7 @@ class IndexClient {
          * Indexes a document for the given docid and fields.
          * Arguments:
          *     docid: unique document identifier. A String no longer than 1024 bytes. Can not be NULL
-         *     fields: map with the document fields
+         *     fields: map with the document fields. field names and values MUST be UTF-8 encoded.
          *     variables (optional): map integer -> float with values for variables that can
          *                           later be used in scoring functions during searches.
          */
