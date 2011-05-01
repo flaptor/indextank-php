@@ -38,7 +38,7 @@ function map_range($val) {
     return sprintf("%s:%s",($val[0] == NULL ? "*": $val[0]), ($val[1] == NULL ? "*": $val[1]));
 }
 
-function api_call($method, $url, $params=array()) { 
+function api_call($method, $url, $params=array()) {
     $splits = parse_url($url);
     if (! empty($splits['scheme'])) { $scheme = $splits['scheme'].'://'; } else { throw new InvalidUrl("[".$url."]"); }
     if (! empty($splits['host'])) { $hostname = $splits['host']; } else { throw new InvalidUrl("[".$url."]"); }
@@ -362,9 +362,9 @@ class IndexClient {
         $params = array("q" => $query);
         if ($start != NULL) { $params["start"] = $start; }
         if ($len != NULL) { $params["len"] = $len; }
-        if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function; }
+        if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function;}
         if ($snippet_fields != NULL) { $params["snippet"] = $snippet_fields;}
-        if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields; }
+        if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields;}
         if ($category_filters != NULL) { $params["category_filters"] = $category_filters;}
         if ($variables) {
             foreach( $variables as $k => $v)
