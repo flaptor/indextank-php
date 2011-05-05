@@ -295,7 +295,7 @@ class IndexClient {
          *     docid: unique document identifier
          *     categories: map string -> string where each key is a category name pointing to its value
          */
-        $res = api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => convert_to_map($categories)));
+        $res = api_call('PUT', $this->categories_url(), array("docid" => $docid, "categories" => $categories));
         return $res->status;
     }
 
