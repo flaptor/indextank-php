@@ -41,9 +41,9 @@ try {
         $ic->create_index();
 
         # waiting for it to be ready
-        print "waiting for index to be ready .. will try at most 1 minute\n";
+        print "waiting for index to be ready .. will try at most 10 minutes\n";
         $ok = false;
-        for ($i = 0; $i < 60; $i++) {
+        for ($i = 0; $i < 600; $i++) {
             if ($ic->has_started()) {
                 $ok = true;
                 break;
@@ -53,7 +53,7 @@ try {
         }
 
         if (!$ok) {
-            fail("waited for a minute and the index is not ready .. something is wrong .. I WILL NOT continue.");
+            fail("waited for 10 minutes and the index is not ready .. something is wrong .. I WILL NOT continue.");
         }
 
 
@@ -72,21 +72,40 @@ try {
         $ic->add_function(1, $formula);
         $functions = $ic->list_functions();
         if (sizeof((array)$functions) != 2) {
-            print_r($functions);
             fail("I expected 2 functions!");
         }
 
         if ($functions->{1} != $formula) {
-            print_r( $functions);
             fail("function 1 is not what I expected");
         }
+   
+
+        # test ADD, search, delete
+        $doc1fields = array("text" => "doc1 is the first", "title" => "dont need one");
+        $doc1vars   = array(0 => 1.2, 1 => 2.3);
+
         
+        # Add a document
+        print "adding a document\n";
+        $ic->add_document("doc1", $doc1fields, $doc1vars); # TODO categories
+   
+        # search for it
+        print "searching for it\n";
+        $res = $ic->search("first");
+        if ($res->matches != 1) {
+            fail("I expected 1 match");
+        }
+
+        # delete it, and verify it went away
+        print "deleting it\n";
+        $ic->delete_document("doc1");
+        print "checking it went away\n";
+        $res = $ic->search("first");
+        if ($res->matches != 0) {
+            fail("I expected 0 matches");
+        }
 
         # TODO
-        # add a document, with variables and categories
-        # search for it
-        # delete it
-
         # batch-add a couple of documents,  with variables and categories
         # search them, with function 0
         # search them, with function 1
