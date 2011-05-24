@@ -61,15 +61,8 @@ class Indextank_Api
      */
     public function api_call($method, $url, $params = array(), $http_options = array())
     {
-
-        $args = '';
-        $sep = '';
-
         if ($method == "GET") {
-            foreach ($params as $key => $val) {
-                $args .= $sep . $key . '=' . urlencode($val);
-                $sep = '&';
-            }
+            $args = http_build_query($params);
             $url .= '?' . $args;
             $args = '';
         } else {
