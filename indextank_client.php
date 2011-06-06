@@ -276,6 +276,20 @@ class IndexClient {
         return $res->status;
     }
 
+    public function delete_documents($docids) {
+        /*
+         * Deletes the given docids from the index if they existed. otherwise, does nothing.
+         * Arguments:
+         *     docids: unique document identifiers
+         */
+        $data = array();
+        foreach ($docids as $docid) {
+            $data[] = array("docid" => $docid);
+        }
+        $res = api_call('DELETE', $this->docs_url(), $data);
+        return json_decode($res->response);
+    }
+
     public function update_variables($docid, $variables) {
         /*
          * Updates the variables of the document for the given docid.
