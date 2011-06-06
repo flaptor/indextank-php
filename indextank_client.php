@@ -287,7 +287,7 @@ class IndexClient {
             $data[] = array("docid" => $docid);
         }
         $res = api_call('DELETE', $this->docs_url(), $data);
-        return $res->status;
+        return json_decode($res->response);
     }
 
     public function update_variables($docid, $variables) {
