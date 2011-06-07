@@ -14,12 +14,11 @@ class HttpException extends Exception {}
 
 function convert_to_map($array_object) {
     $result = new stdClass();
-    
     for($i = 0; $i < sizeof($array_object); ++$i) {
-        $result->{$i} = $array_object[$i];
+		$keys = array_keys($array_object);
+        $result->{$i} = $array_object[$keys[$i]];
     }
-    
-    return $result;
+    return $array_object;
 }
 
 /*
@@ -57,16 +56,23 @@ function api_call($method, $url, $params=array()) {
     
     if ($method == "GET") {
         foreach ($params as $key => $val) {
-            $args .= $sep.$key.'='.urlencode($val);
-            $sep = '&';
+			if($key != 'q' && $key != 'fetch' && $key != 'snippet' && $key != 'function'){
+				$args .= $sep.$key.'='.json_encode($val);   
+				$sep = '&';
+			}
+			else{
+				$args .= $sep.$key.'='.urlencode($val);   
+				$sep = '&';
+			}
         }
         $url .= '?'.$args;
         $args = '';
+		
     } else {
         $args = json_encode($params);
     }
 
-    //print "url: " . $url . ": " . $args . "\n";
+   #print "url: " . $url . "  args: " . $args . "\n";
 
     $session = curl_init($url);
     curl_setopt($session, CURLOPT_CUSTOMREQUEST, $method); // Tell curl to use HTTP method of choice
@@ -254,8 +260,15 @@ class IndexClient {
                 } else {
                     $variables = $doc_data['variables'];
                 }
+				
+                // set $categories
+                if (!array_key_exists("categories", $doc_data)) {
+                    $categories = NULL;
+                } else {
+                    $categories = $doc_data['categories'];
+                }
 
-                $data[] = $this->as_document($docid, $fields, $variables);
+                $data[] = $this->as_document($docid, $fields, $variables, $categories);
             } catch (InvalidArgumentException $iae) {
                 throw new InvalidArgumentException("while processing document $i: " . $iae->getMessage());
             }
@@ -363,10 +376,10 @@ class IndexClient {
         $params = array("q" => $query);
         if ($start != NULL) { $params["start"] = $start; }
         if ($len != NULL) { $params["len"] = $len; }
-        if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function; }
-        if ($snippet_fields != NULL) { $params["snippet"] = $snippet_fields; }
-        if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields; }
-        if ($category_filters != NULL) { $params["category_filters"] = $category_filters; }
+        if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function;}
+        if ($snippet_fields != NULL) { $params["snippet"] = $snippet_fields;}
+        if ($fetch_fields != NULL) { $params["fetch"] = $fetch_fields;}
+        if ($category_filters != NULL) { $params["category_filters"] = $category_filters;}
         if ($variables) {
             foreach( $variables as $k => $v)
             {
@@ -418,12 +431,15 @@ class IndexClient {
     /*
      * Creates a 'document', useful for IndexClient->add_document and IndexClient->add_documents
      */
-    private function as_document($docid, $fields, $variables = NULL){
+    private function as_document($docid, $fields, $variables = NULL, $categories = NULL){
         if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
         if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
         $data = array("docid" => $docid, "fields" => $fields);
         if ($variables != NULL) {
             $data["variables"] = convert_to_map($variables);
+        }
+        if ($categories != NULL) {
+            $data["categories"] = convert_to_map($categories);
         }
         return $data;
     }
