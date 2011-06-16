@@ -107,9 +107,9 @@ class ApiClient {
         return json_decode(api_call('GET', $this->indexes_url())->response);
     }
 
-    public function create_index($index_name) {
+    public function create_index($index_name, $public_search = NULL) {
         $index = $this->get_index($index_name);
-        $index->create_index();
+        $index->create_index($public_search);
         return $index;
     }
 
@@ -187,14 +187,18 @@ class IndexClient {
     }
 
 
-    public function create_index() {
+    public function create_index($public_search = NULL) {
         /*
          * Creates this index. 
          * If it already existed a IndexAlreadyExists exception is raised. 
          * If the account has reached the limit a TooManyIndexes exception is raised
          */
         try {
-            $res = api_call('PUT', $this->index_url);
+            if (is_null($public_search) ){
+              $public_search = false;
+            }
+            $res = api_call('PUT', $this->index_url, array("public_search" => $public_search));
+
             if ($res->status == 204) {
                 throw new IndexAlreadyExists('An index for the given name already exists');
             }
