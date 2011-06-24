@@ -6,6 +6,7 @@
 class InvalidResponseFromServer extends Exception {}
 class TooManyIndexes extends Exception {}
 class IndexAlreadyExists extends Exception {}
+class IndexDoesNotExist extends Exception {}
 class InvalidQuery extends Exception {}
 class InvalidDefinition extends Exception {}
 class Unauthorized extends Exception {}
@@ -55,15 +56,17 @@ function api_call($method, $url, $params=array()) {
     $args = '';
     $sep = '';
     
-    if ($method == "GET") {
-        foreach ($params as $key => $val) {
-            $args .= $sep.$key.'='.urlencode($val);
-            $sep = '&';
+    if ( $params != NULL ) {
+        if ($method == "GET") {
+            foreach ($params as $key => $val) {
+                $args .= $sep.$key.'='.urlencode($val);
+                $sep = '&';
+            }
+            $url .= '?'.$args;
+            $args = '';
+        } else {
+            $args = json_encode($params);
         }
-        $url .= '?'.$args;
-        $args = '';
-    } else {
-        $args = json_encode($params);
     }
 
     //print "url: " . $url . ": " . $args . "\n";
@@ -107,17 +110,21 @@ class ApiClient {
         return json_decode(api_call('GET', $this->indexes_url())->response);
     }
 
-    public function create_index($index_name, $public_search = NULL) {
+    public function create_index($index_name, $options = NULL) {
         $index = $this->get_index($index_name);
-        $index->create_index($public_search);
+        $index->create_index($options);
+        return $index;
+    }
+
+    public function update_index($index_name, $options) {
+        $index = $this->get_index($index_name);
+        $index->update_index($options);
         return $index;
     }
 
     private function indexes_url() {
         return $this->api_url . '/v1/indexes';
     }
-    
-    
 
     private function index_url($index_name) {
         return $this->indexes_url() . "/" . urlencode($index_name);
@@ -191,27 +198,35 @@ class IndexClient {
         return $this->metadata->{'public_search'};
     }
 
-    public function create_index($public_search = NULL) {
+    public function create_index($options = NULL) {
         /*
          * Creates this index. 
          * If it already existed a IndexAlreadyExists exception is raised. 
          * If the account has reached the limit a TooManyIndexes exception is raised
          */
         try {
-            if (is_null($public_search) ){
-              $public_search = false;
+            if ( $this->exists() ){
+              throw new IndexAlreadyExists('An index for the given name doesn\'t exist');
             }
-            $res = api_call('PUT', $this->index_url, array("public_search" => $public_search));
+            $res = api_call('PUT', $this->index_url, $options);
 
-            if ($res->status == 204) {
-                throw new IndexAlreadyExists('An index for the given name already exists');
-            }
         } catch (HttpException $e) {
             if ($e->getCode() == 409) {
                 throw new TooManyIndexes($e->getMessage());
             }
             throw $e;
         }
+    }
+
+    public function update_index($options) {
+        /*
+         * Update this index. 
+         * If it doesn't exist a IndexDoesNotExist exception is raised. 
+         */
+        if ( ! $this->exists() ){
+          throw new IndexDoesNotExist('An index for the given name doesn\'t exist');
+        }
+        $res = api_call('PUT', $this->index_url, $options);
     }
 
     public function delete_index() {
