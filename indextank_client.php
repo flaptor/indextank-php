@@ -186,6 +186,10 @@ class IndexClient {
         return $this->metadata->{'creation_time'};
     }
 
+    public function is_public_search_enabled() {
+        $this->refresh_metadata();
+        return $this->metadata->{'public_search'};
+    }
 
     public function create_index($public_search = NULL) {
         /*
