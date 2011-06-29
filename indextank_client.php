@@ -425,6 +425,58 @@ class IndexClient {
     }
 
 
+    /*
+     * Performs a delete on the results of a search.
+     *
+     * @param variables: An array with 'query variables'. Example: array( 0 => 3, 1 => 34);
+     * @param docvar_filters: An array with filters for document variables. 
+     *     Example: array(0 => array(array(1,4), array(6, 9), array(16,NULL)))
+     *     Document variable 0 should be between 1 and 4 OR 6 and 9 OR greater than 16
+     * @param function_filters: An array with filters for function scores. 
+     *     Example: array(2 => array(array(2,6), array(7, 11), array(15,NULL)))
+     *     Scoring function 2 must return a value between 2 and 6 OR 7 and 11 OR greater than 15 for documents matching this query.
+     *
+     */
+    public function delete_by_search($query, $start=NULL, $scoring_function=NULL, $category_filters=NULL, $variables=NULL, $docvar_filters=NULL, $function_filters=NULL) {
+        $params = array("q" => $query);
+        if ($start != NULL) { $params["start"] = $start; }
+        if ($scoring_function != NULL) { $params["function"] = (string)$scoring_function; }
+        if ($category_filters != NULL) { $params["category_filters"] = $category_filters; }
+        if ($variables) {
+            foreach( $variables as $k => $v)
+            {
+                $params["var".strval($k)] = $v;
+            }
+        }
+
+        if ($docvar_filters){
+            // $docvar_filters is something like
+            // { 3 => [ (1, 3), (5, NULL) ]} to filter_docvar3 => 1:3,5:*
+            foreach( $docvar_filters as $k => $v){
+                $params["filter_docvar".strval($k)] = implode(array_map( 'map_range', $v), ",");
+            }
+        }
+        
+        if ($function_filters){
+            // $function_filters is something like
+            // { 2 => [ (1, 4), (7, NULL) ]} to filter_function2 => 1:4,7:*
+            foreach( $docvar_filters as $k => $v){
+                $params["filter_function".strval($k)] = implode(array_map( 'map_range', $v), ",");
+            }
+        }
+
+        try {
+            $res = api_call('DELETE', $this->search_url(), $params);
+            return json_decode($res->response);
+        } catch (HttpException $e) {
+            if ($e->getCode() == 400) {
+                throw new InvalidQuery($e->getMessage());
+            }
+            throw $e;
+        }
+    }
+
+
     private function get_metadata() {
         if ($this->metadata == NULL) {
             return $this->refresh_metadata();
