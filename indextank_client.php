@@ -57,10 +57,17 @@ function api_call($method, $url, $params=array()) {
     $sep = '';
     
     if ( $params != NULL ) {
-        if ($method == "GET") {
+        if ($method == "GET" or $method == "DELETE") {
             foreach ($params as $key => $val) {
-                $args .= $sep.$key.'='.urlencode($val);
-                $sep = '&';
+                if ( is_array($val) ) {
+                    foreach ($val as $v) {
+                        $args .= $sep.$key.'='.urlencode($v);
+                        $sep = '&';
+                    }
+                } else {
+                    $args .= $sep.$key.'='.urlencode($val);
+                    $sep = '&';
+                }
             }
             $url .= '?'.$args;
             $args = '';
@@ -178,14 +185,19 @@ class IndexClient {
         return $this->metadata->{'started'};
     }
 
+    public function get_status() {
+        $this->refresh_metadata();
+        return $this->metadata->{'status'};
+    }
+
     public function get_code() {
         $this->refresh_metadata();
-        return $this->metadata['code'];
+        return $this->metadata->{'code'};
     }
 
     public function get_size() {
         $this->refresh_metadata();
-        return $this->metadata['size'];
+        return $this->metadata->{'size'};
     }
 
     public function get_creation_time() {
@@ -305,11 +317,7 @@ class IndexClient {
          * Arguments:
          *     docids: unique document identifiers
          */
-        $data = array();
-        foreach ($docids as $docid) {
-            $data[] = array("docid" => $docid);
-        }
-        $res = api_call('DELETE', $this->docs_url(), $data);
+        $res = api_call('DELETE', $this->docs_url(), array("docid" => $docids));
         return json_decode($res->response);
     }
 
