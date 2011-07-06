@@ -1,25 +1,41 @@
 <?php
+/**
+ * Author:: Gilles Devaux (<gilles.devaux@gmail.com>)
+ * Copyright:: Copyright (c) 2011 Formspring.me
+ * License:: Apache License, Version 2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 
-/*
-    * Converts an array of 2 elements (which can be NULL) to a colon-separated string containing those elements.
-    * NULL elements are replaced by '*'
-    *
-    * Examples:
-    *     indextank_map_range(array(2,4)) => "2:4";
-    *     indextank_map_range(array(NULL,3)) => "*:3";
-    *     indextank_map_range(array(5,NULL)) => "5:*";
-    *     indextank_map_range(array(NULL,NULL)) => "*:*";
-    *
-    *
-    * @param val: an array of 2 elements.
-    */
-function indextank_map_range($val)
-{
+/**
+ * Converts an array of 2 elements (which can be NULL) to a colon-separated string containing those elements.
+ * NULL elements are replaced by '*'
+ *
+ * Examples:
+ *     indextank_map_range(array(2,4)) => "2:4";
+ *     indextank_map_range(array(NULL,3)) => "*:3";
+ *     indextank_map_range(array(5,NULL)) => "5:*";
+ *     indextank_map_range(array(NULL,NULL)) => "*:*";
+ *
+ *
+ * @param val: an array of 2 elements.
+ * @return string
+ */
+function indextank_map_range($val) {
     return sprintf("%s:%s", ($val[0] == NULL ? "*" : $val[0]), ($val[1] == NULL ? "*" : $val[1]));
 }
 
-class Indextank_Index
-{
+class Indextank_Index {
 
     /*
     * Client for a specific index.
@@ -38,15 +54,13 @@ class Indextank_Index
      * @param  $index_name
      * @param null $metadata
      */
-    public function __construct(Indextank_Api $api, $index_name, $metadata = NULL)
-    {
+    public function __construct(Indextank_Api $api, $index_name, $metadata = NULL) {
         $this->api = $api;
         $this->index_url = $api->index_url(str_replace('/', '', $index_name));
         $this->metadata = $metadata;
     }
 
-    public function exists()
-    {
+    public function exists() {
         /*
          * Returns whether an index for the name of this instance
          * exists, if it doesn't it can be created by calling
@@ -55,7 +69,7 @@ class Indextank_Index
         try {
             $this->refresh_metadata();
             return true;
-        } catch (HttpException $e) {
+        } catch (Indextank_Exception_HttpException $e) {
             if ($e->getCode() == 404) {
                 return false;
             } else {
@@ -64,39 +78,34 @@ class Indextank_Index
         }
     }
 
-    public function has_started()
-    {
+    public function has_started() {
         /*
          * Returns whether this index is responsive. Newly created
          * indexes can take a little while to get started.
          * If this method returns False most methods in this class
-         * will raise an HttpException with a status of 503.
+         * will raise an Indextank_Exception_HttpException with a status of 503.
          */
         $this->refresh_metadata();
         return $this->metadata->{'started'};
     }
 
-    public function get_code()
-    {
+    public function get_code() {
         $this->refresh_metadata();
         return $this->metadata['code'];
     }
 
-    public function get_size()
-    {
+    public function get_size() {
         $this->refresh_metadata();
         return $this->metadata['size'];
     }
 
-    public function get_creation_time()
-    {
+    public function get_creation_time() {
         $this->refresh_metadata();
         return $this->metadata->{'creation_time'};
     }
 
 
-    public function create_index()
-    {
+    public function create_index() {
         /*
          * Creates this index.
          * If it already existed a IndexAlreadyExists exception is raised.
@@ -107,7 +116,7 @@ class Indextank_Index
             if ($res->status == 204) {
                 throw new Indextank_Exception_IndexAlreadyExists('An index for the given name already exists');
             }
-        } catch (HttpException $e) {
+        } catch (Indextank_Exception_HttpException $e) {
             if ($e->getCode() == 409) {
                 throw new Indextank_Exception_TooManyIndexes($e->getMessage());
             }
@@ -115,14 +124,12 @@ class Indextank_Index
         }
     }
 
-    public function delete_index()
-    {
+    public function delete_index() {
         $res = $this->api->api_call('DELETE', $this->index_url);
         return $res->status;
     }
 
-    public function add_document($docid, $fields, $variables = NULL)
-    {
+    public function add_document($docid, $fields, $variables = NULL) {
         /*
          * Indexes a document for the given docid and fields.
          * Arguments:
@@ -136,8 +143,7 @@ class Indextank_Index
     }
 
 
-    public function add_documents($documents = array())
-    {
+    public function add_documents($documents = array()) {
         /*
          * Indexes an array of documents. Each element (document) on the array needs to be an
          * array, with 'docid', 'fields' and optionally 'variables' keys.
@@ -178,8 +184,7 @@ class Indextank_Index
     }
 
 
-    public function delete_document($docid)
-    {
+    public function delete_document($docid) {
         /*
          * Deletes the given docid from the index if it existed. otherwise, does nothing.
          * Arguments:
@@ -189,8 +194,7 @@ class Indextank_Index
         return $res->status;
     }
 
-    public function update_variables($docid, $variables)
-    {
+    public function update_variables($docid, $variables) {
         /*
          * Updates the variables of the document for the given docid.
          * Arguments:
@@ -202,8 +206,7 @@ class Indextank_Index
         return $res->status;
     }
 
-    public function update_categories($docid, $categories)
-    {
+    public function update_categories($docid, $categories) {
         /*
          * Updates the category values of the document for the given docid.
          * Arguments:
@@ -214,8 +217,7 @@ class Indextank_Index
         return $res->status;
     }
 
-    public function promote($docid, $query)
-    {
+    public function promote($docid, $query) {
         /*
          * Makes the given docid the top result of the given query.
          * Arguments:
@@ -226,12 +228,11 @@ class Indextank_Index
         return $res->status;
     }
 
-    public function add_function($function_index, $definition)
-    {
+    public function add_function($function_index, $definition) {
         try {
             $res = $this->api->api_call('PUT', $this->function_url($function_index), array("definition" => $definition));
             return $res->status;
-        } catch (HttpException $e) {
+        } catch (Indextank_Exception_HttpException $e) {
             if ($e->getCode() == 400) {
                 throw new Indextank_Exception_InvalidDefinition($e->getMessage());
             }
@@ -239,14 +240,12 @@ class Indextank_Index
         }
     }
 
-    public function delete_function($function_index)
-    {
+    public function delete_function($function_index) {
         $res = $this->api->api_call('DELETE', $this->function_url($function_index));
         return $res->status;
     }
 
-    public function list_functions()
-    {
+    public function list_functions() {
         $res = $this->api->api_call('GET', $this->functions_url());
         return json_decode($res->response);
     }
@@ -264,8 +263,7 @@ class Indextank_Index
      *     Scoring function 2 must return a value between 2 and 6 OR 7 and 11 OR greater than 15 for documents matching this query.
      *
      */
-    public function search($query, $start = NULL, $len = NULL, $scoring_function = NULL, $snippet_fields = NULL, $fetch_fields = NULL, $category_filters = NULL, $variables = NULL, $docvar_filters = NULL, $function_filters = NULL)
-    {
+    public function search($query, $start = NULL, $len = NULL, $scoring_function = NULL, $snippet_fields = NULL, $fetch_fields = NULL, $category_filters = NULL, $variables = NULL, $docvar_filters = NULL, $function_filters = NULL) {
         $params = array("q" => $query);
         if ($start != NULL) {
             $params["start"] = $start;
@@ -311,7 +309,7 @@ class Indextank_Index
         try {
             $res = $this->api->api_call('GET', $this->search_url(), $params);
             return json_decode($res->response);
-        } catch (HttpException $e) {
+        } catch (Indextank_Exception_HttpException $e) {
             if ($e->getCode() == 400) {
                 throw new Indextank_Exception_InvalidQuery($e->getMessage());
             }
@@ -320,16 +318,14 @@ class Indextank_Index
     }
 
 
-    private function get_metadata()
-    {
+    private function get_metadata() {
         if ($this->metadata == NULL) {
             return $this->refresh_metadata();
         }
         return $this->metadata;
     }
 
-    private function refresh_metadata()
-    {
+    private function refresh_metadata() {
         $res = $this->api->api_call('GET', $this->index_url, array());
         $this->metadata = json_decode($res->response);
         return $this->metadata;
@@ -338,8 +334,7 @@ class Indextank_Index
     /*
      * Creates a 'document', useful for IndexClient->add_document and IndexClient->add_documents
      */
-    private function as_document($docid, $fields, $variables = NULL)
-    {
+    private function as_document($docid, $fields, $variables = NULL) {
         if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
         if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
         $data = array("docid" => $docid, "fields" => $fields);
@@ -349,43 +344,35 @@ class Indextank_Index
         return $data;
     }
 
-    private function docs_url()
-    {
+    private function docs_url() {
         return $this->index_url . "/docs";
     }
 
-    private function variables_url()
-    {
+    private function variables_url() {
         return $this->index_url . "/docs/variables";
     }
 
-    private function categories_url()
-    {
+    private function categories_url() {
         return $this->index_url . "/docs/categories";
     }
 
-    private function promote_url()
-    {
+    private function promote_url() {
         return $this->index_url . "/promote";
     }
 
-    private function search_url()
-    {
+    private function search_url() {
         return $this->index_url . "/search";
     }
 
-    private function functions_url()
-    {
+    private function functions_url() {
         return $this->index_url . "/functions";
     }
 
-    private function function_url($n)
-    {
+    private function function_url($n) {
         return $this->index_url . "/functions/" . $n;
     }
 
-    private function convert_to_map($array_object)
-    {
+    private function convert_to_map($array_object) {
         $result = new stdClass();
 
         for ($i = 0; $i < sizeof($array_object); ++$i) {

@@ -1,9 +1,20 @@
 <?php
 /**
- * User: gilles
- * Date: 5/19/11
- * Time: 4:29 PM
+ * Author:: Gilles Devaux (<gilles.devaux@gmail.com>)
+ * Copyright:: Copyright (c) 2011 Formspring.me
+ * License:: Apache License, Version 2.0
  *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
 
 class Indextank_Api
@@ -52,7 +63,7 @@ class Indextank_Api
 
     /**
      * Make a call to the api
-     * @throws HttpException
+     * @throws Indextank_Exception_HttpException
      * @param string $method HTTP method
      * @param string $url URL to call
      * @param array $params query parameters or body
@@ -87,7 +98,7 @@ class Indextank_Api
         if (floor($http_code / 100) == 2) {
             return new Indextank_Response($http_code, $response);
         }
-        throw new HttpException($response, $http_code);
+        throw new Indextank_Exception_HttpException($response, $http_code);
     }
 
 }

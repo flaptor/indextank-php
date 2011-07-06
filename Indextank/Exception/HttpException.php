@@ -17,7 +17,7 @@
  * under the License.
  */
 
-class Indextank_Exception_TooManyIndexes extends Indextank_Exception
+class Indextank_Exception_HttpException extends Indextank_Exception
 {
 
 }
