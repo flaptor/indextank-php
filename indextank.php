@@ -4,6 +4,7 @@
 
 require_once 'Indextank/Exception.php';
 require_once 'Indextank/Exception/IndexAlreadyExists.php';
+require_once 'Indextank/Exception/IndexDoesNotExist.php';
 require_once 'Indextank/Exception/InvalidDefinition.php';
 require_once 'Indextank/Exception/InvalidQuery.php';
 require_once 'Indextank/Exception/InvalidResponseFromServer.php';

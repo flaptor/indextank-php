@@ -89,14 +89,19 @@ class Indextank_Index {
         return $this->metadata->{'started'};
     }
 
+    public function get_status() {
+        $this->refresh_metadata();
+        return $this->metadata->{'status'};
+    }
+
     public function get_code() {
         $this->refresh_metadata();
-        return $this->metadata['code'];
+        return $this->metadata->{'code'};
     }
 
     public function get_size() {
         $this->refresh_metadata();
-        return $this->metadata['size'];
+        return $this->metadata->{'size'};
     }
 
     public function get_creation_time() {
@@ -110,17 +115,18 @@ class Indextank_Index {
     }
 
 
-    public function create_index() {
+    public function create_index( $options = array()) {
         /*
          * Creates this index.
          * If it already existed a IndexAlreadyExists exception is raised.
          * If the account has reached the limit a TooManyIndexes exception is raised
          */
         try {
-            $res = $this->api->api_call('PUT', $this->index_url);
-            if ($res->status == 204) {
+            if ( $this->exists() ) { 
                 throw new Indextank_Exception_IndexAlreadyExists('An index for the given name already exists');
             }
+            $res = $this->api->api_call('PUT', $this->index_url, $options);
+            return $res->status;
         } catch (Indextank_Exception_HttpException $e) {
             if ($e->getCode() == 409) {
                 throw new Indextank_Exception_TooManyIndexes($e->getMessage());
@@ -128,6 +134,21 @@ class Indextank_Index {
             throw $e;
         }
     }
+
+
+    public function update_index($options) {
+        /*
+         * Update this index.
+         * If it doesn't exist a IndexDoesNotExist exception is raised.
+         */
+        if ( ! $this->exists() ){
+            throw new Indextank_Exception_IndexDoesNotExist('An index for the given name doesn\'t exist');
+        }
+        
+        $res = $this->api->api_call('PUT', $this->index_url, $options);
+        return $res->status;
+    }
+
 
     public function delete_index() {
         $res = $this->api->api_call('DELETE', $this->index_url);
@@ -209,7 +230,7 @@ class Indextank_Index {
         foreach ($docids as $docid) {
             $data[] = array("docid" => $docid);
         }
-        $res = api_call('DELETE', $this->docs_url(), $data);
+        $res = $this->api->api_call('DELETE', $this->docs_url(), $data);
         return json_decode($res->response);
     }
 
