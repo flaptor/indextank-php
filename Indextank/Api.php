@@ -72,7 +72,7 @@ class Indextank_Api
      */
     public function api_call($method, $url, $params = array(), $http_options = array())
     {
-        if ($method == "GET") {
+        if ($method == "GET" || $method == "DELETE") {
             $args = http_build_query($params);
             $url .= '?' . $args;
             $args = '';

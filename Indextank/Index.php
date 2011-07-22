@@ -234,6 +234,25 @@ class Indextank_Index {
         return json_decode($res->response);
     }
 
+    /*
+     * Performs a delete on the results of a search.
+     * See 'search' for parameter explanation.
+     */
+    public function delete_by_query($query, $start=NULL, $scoring_function=NULL, $category_filters=NULL, $variables=NULL, $docvar_filters=NULL, $function_filters=NULL) {
+
+        $params = $this->as_search_param( $query, $start, NULL, NULL, NULL, NULL, $category_filters, $variables, $docvar_filters, $function_filters);
+        
+        try {
+            $res = $this->api->api_call('DELETE', $this->search_url(), $params);
+            return json_decode($res->response);
+        } catch (HttpException $e) {
+            if ($e->getCode() == 400) {
+                throw new InvalidQuery($e->getMessage());
+            }
+            throw $e;
+        }
+    }
+
 
     public function update_variables($docid, $variables) {
         /*
@@ -305,6 +324,52 @@ class Indextank_Index {
      *
      */
     public function search($query, $start = NULL, $len = NULL, $scoring_function = NULL, $snippet_fields = NULL, $fetch_fields = NULL, $category_filters = NULL, $variables = NULL, $docvar_filters = NULL, $function_filters = NULL) {
+
+        $params = $this->as_search_param( $query, $start, $len, $scoring_function, $snippet_fields, $fetch_fields, $category_filters, $variables, $docvar_filters, $function_filters);
+
+        try {
+            $res = $this->api->api_call('GET', $this->search_url(), $params);
+            return json_decode($res->response);
+        } catch (Indextank_Exception_HttpException $e) {
+            if ($e->getCode() == 400) {
+                throw new Indextank_Exception_InvalidQuery($e->getMessage());
+            }
+            throw $e;
+        }
+    }
+
+
+    private function get_metadata() {
+        if ($this->metadata == NULL) {
+            return $this->refresh_metadata();
+        }
+        return $this->metadata;
+    }
+
+    private function refresh_metadata() {
+        $res = $this->api->api_call('GET', $this->index_url, array());
+        $this->metadata = json_decode($res->response);
+        return $this->metadata;
+    }
+
+    /*
+     * Creates a 'document', useful for IndexClient->add_document and IndexClient->add_documents
+     */
+    private function as_document($docid, $fields, $variables = NULL) {
+        if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
+        if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
+        $data = array("docid" => $docid, "fields" => $fields);
+        if ($variables != NULL) {
+            $data["variables"] = $this->convert_to_map($variables);
+        }
+        return $data;
+    }
+
+
+
+
+    private function as_search_param( $query, $start = NULL, $len = NULL, $scoring_function = NULL, $snippet_fields = NULL, $fetch_fields = NULL, $category_filters = NULL, $variables = NULL, $docvar_filters = NULL, $function_filters = NULL) {
+
         $params = array("q" => $query);
         if ($start != NULL) {
             $params["start"] = $start;
@@ -346,44 +411,11 @@ class Indextank_Index {
                 $params["filter_function" . strval($k)] = implode(array_map('indextank_map_range', $v), ",");
             }
         }
+       
 
-        try {
-            $res = $this->api->api_call('GET', $this->search_url(), $params);
-            return json_decode($res->response);
-        } catch (Indextank_Exception_HttpException $e) {
-            if ($e->getCode() == 400) {
-                throw new Indextank_Exception_InvalidQuery($e->getMessage());
-            }
-            throw $e;
-        }
+        return $params;
     }
 
-
-    private function get_metadata() {
-        if ($this->metadata == NULL) {
-            return $this->refresh_metadata();
-        }
-        return $this->metadata;
-    }
-
-    private function refresh_metadata() {
-        $res = $this->api->api_call('GET', $this->index_url, array());
-        $this->metadata = json_decode($res->response);
-        return $this->metadata;
-    }
-
-    /*
-     * Creates a 'document', useful for IndexClient->add_document and IndexClient->add_documents
-     */
-    private function as_document($docid, $fields, $variables = NULL) {
-        if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
-        if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
-        $data = array("docid" => $docid, "fields" => $fields);
-        if ($variables != NULL) {
-            $data["variables"] = $this->convert_to_map($variables);
-        }
-        return $data;
-    }
 
     private function docs_url() {
         return $this->index_url . "/docs";
