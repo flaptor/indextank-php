@@ -155,7 +155,7 @@ class Indextank_Index {
         return $res->status;
     }
 
-    public function add_document($docid, $fields, $variables = NULL) {
+    public function add_document($docid, $fields, $variables = NULL, $categories = NULL) {
         /*
          * Indexes a document for the given docid and fields.
          * Arguments:
@@ -164,7 +164,7 @@ class Indextank_Index {
          *     variables (optional): map integer -> float with values for variables that can
          *                           later be used in scoring functions during searches.
          */
-        $res = $this->api->api_call('PUT', $this->docs_url(), $this->as_document($docid, $fields, $variables));
+        $res = $this->api->api_call('PUT', $this->docs_url(), $this->as_document($docid, $fields, $variables, $categories));
         return $res->status;
     }
 
@@ -172,7 +172,7 @@ class Indextank_Index {
     public function add_documents($documents = array()) {
         /*
          * Indexes an array of documents. Each element (document) on the array needs to be an
-         * array, with 'docid', 'fields' and optionally 'variables' keys.
+         * array, with 'docid', 'fields' and optionally 'variables' keys and 'categories'.
          * The semantic is the same as IndexClient->add_document();
          * Arguments:
          *     documents: an array of arrays, each representing a document
@@ -199,7 +199,14 @@ class Indextank_Index {
                     $variables = $doc_data['variables'];
                 }
 
-                $data[] = $this->as_document($docid, $fields, $variables);
+                // set $variables
+                if (!array_key_exists("categories", $doc_data)) {
+                    $categories = NULL;
+                } else {
+                    $categories = $doc_data['categories'];
+                }
+
+                $data[] = $this->as_document($docid, $fields, $variables, $categories);
             } catch (InvalidArgumentException $iae) {
                 throw new InvalidArgumentException("while processing document $i: " . $iae->getMessage());
             }
@@ -355,12 +362,16 @@ class Indextank_Index {
     /*
      * Creates a 'document', useful for IndexClient->add_document and IndexClient->add_documents
      */
-    private function as_document($docid, $fields, $variables = NULL) {
+    private function as_document($docid, $fields, $variables = NULL, $categories = NULL) {
         if (NULL == $docid) throw new InvalidArgumentException("\$docid can't be NULL");
         if (mb_strlen($docid, '8bit') > 1024) throw new InvalidArgumentException("\$docid can't be longer than 1024 bytes");
         $data = array("docid" => $docid, "fields" => $fields);
         if ($variables != NULL) {
             $data["variables"] = $this->convert_to_map($variables);
+        }
+
+        if ($categories != NULL) {
+            $data["categories"] = $categories;
         }
         return $data;
     }
