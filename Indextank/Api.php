@@ -74,6 +74,7 @@ class Indextank_Api
     {
         if ($method == "GET" || $method == "DELETE") {
             $args = http_build_query($params);
+            $args = preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', $args);
             $url .= '?' . $args;
             $args = '';
         } else {

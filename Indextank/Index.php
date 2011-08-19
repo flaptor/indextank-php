@@ -233,10 +233,7 @@ class Indextank_Index {
          * Arguments:
          *     docids: unique document identifiers
          */
-        $data = array();
-        foreach ($docids as $docid) {
-            $data[] = array("docid" => $docid);
-        }
+        $data = array("docid" => $docids);
         $res = $this->api->api_call('DELETE', $this->docs_url(), $data);
         return json_decode($res->response);
     }
