@@ -74,7 +74,11 @@ class Indextank_Api
     {
         if ($method == "GET" || $method == "DELETE") {
             $args = http_build_query($params);
+            
+            // remove the php special encoding of parameters
+            // see http://www.php.net/manual/en/function.http-build-query.php#78603
             $args = preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', $args);
+            
             $url .= '?' . $args;
             $args = '';
         } else {
