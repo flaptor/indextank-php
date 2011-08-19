@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.9.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+    http://pear.php.net/dtd/tasks-1.0.xsd
+    http://pear.php.net/dtd/package-2.0
+    http://pear.php.net/dtd/package-2.0.xsd">
+ <name>Indextank</name>
+ <uri>http://githubpath</uri>
+ <summary>Indextank php client</summary>
+ <description>Indextank php client</description>
+ <lead>
+  <name>todo</name>
+  <user>todo</user>
+  <email>todo@php.net</email>
+  <active>yes</active>
+ </lead>
+ <date>2011-05-24</date>
+ <time>11:00:49</time>
+ <version>
+  <release>0.1.0</release>
+  <api>0.1.0</api>
+ </version>
+ <stability>
+  <release>alpha</release>
+  <api>alpha</api>
+ </stability>
+ <license uri="http://www.apache.org/licenses/">Apache</license>
+ <notes>
+Initial
+ </notes>
+ <contents>
+  <dir baseinstalldir="." name="/">
+   <file baseinstalldir="." md5sum="0ccc07bc0b018af6e86192adbd3ed29d" name="Indextank/Api.php" role="php" />
+   <file baseinstalldir="." md5sum="b2ffce08636904893eb54d4ed4853a9f" name="Indextank/Exception.php" role="php" />
+   <file baseinstalldir="." md5sum="83f7b2b75b77503a2ba48ed9ae782d6e" name="Indextank/Index.php" role="php" />
+   <file baseinstalldir="." md5sum="afa1b623777a5313b631fcd1b302779b" name="Indextank/Response.php" role="php" />
+   <file baseinstalldir="." md5sum="b4c0600fdc841deb50b23ed6171e5d51" name="Indextank/Exception/IndexAlreadyExists.php" role="php" />
+   <file baseinstalldir="." md5sum="459d6c26dba88c87944cfec7463e14d8" name="Indextank/Exception/InvalidDefinition.php" role="php" />
+   <file baseinstalldir="." md5sum="fb2b584f29db6f6b0c6e28d5cba51c94" name="Indextank/Exception/InvalidQuery.php" role="php" />
+   <file baseinstalldir="." md5sum="daf8738af43b576b886244c495e1beed" name="Indextank/Exception/InvalidResponseFromServer.php" role="php" />
+   <file baseinstalldir="." md5sum="45243894ff31d71430a6e62febb00bbf" name="Indextank/Exception/InvalidUrl.php" role="php" />
+   <file baseinstalldir="." md5sum="0f1de5496d5ba08364f3626ce4c5255a" name="Indextank/Exception/TooManyIndexes.php" role="php" />
+   <file baseinstalldir="." md5sum="28e4dd575eec122de1617098cccc8e5e" name="Indextank/Exception/Unauthorized.php" role="php" />
+   <file baseinstalldir="." md5sum="6e94d43feb9e32f50d429079fbdd287e" name="indextank.php" role="php" />
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <phprelease />
+ <changelog>
+  <release>
+   <version>
+    <release>0.1.0</release>
+    <api>0.1.0</api>
+   </version>
+   <stability>
+    <release>alpha</release>
+    <api>alpha</api>
+   </stability>
+   <date>2011-05-24</date>
+   <license uri="http://www.apache.org/licenses/">Apache</license>
+   <notes>
+Initial
+   </notes>
+  </release>
+ </changelog>
+</package>
