@@ -8,6 +8,7 @@ __WARNING: NOT AUTOMATICALLY BACKWARDS COMPATIBLE.__
 This version renames almost all the classes in the library. 
 
 Probably, you should just apply the following changes:
+
   * Include indextank.php file instead of indextank_client.php
   * Rename class ApiClient to Indextank_Api
 
