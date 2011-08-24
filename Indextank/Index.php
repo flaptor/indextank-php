@@ -242,7 +242,7 @@ class Indextank_Index {
      * Performs a delete on the results of a search.
      * See 'search' for parameter explanation.
      */
-    public function delete_by_query($query, $start=NULL, $scoring_function=NULL, $category_filters=NULL, $variables=NULL, $docvar_filters=NULL, $function_filters=NULL) {
+    public function delete_by_search($query, $start=NULL, $scoring_function=NULL, $category_filters=NULL, $variables=NULL, $docvar_filters=NULL, $function_filters=NULL) {
 
         $params = $this->as_search_param( $query, $start, NULL, NULL, NULL, NULL, $category_filters, $variables, $docvar_filters, $function_filters);
         
