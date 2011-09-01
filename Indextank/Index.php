@@ -395,7 +395,7 @@ class Indextank_Index {
             $params["fetch"] = $fetch_fields;
         }
         if ($category_filters != NULL) {
-            $params["category_filters"] = $category_filters;
+            $params["category_filters"] = json_encode($category_filters);
         }
         if ($variables) {
             foreach ($variables as $k => $v)
