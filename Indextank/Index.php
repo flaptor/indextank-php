@@ -415,7 +415,7 @@ class Indextank_Index {
         if ($function_filters) {
             // $function_filters is something like
             // { 2 => [ (1, 4), (7, NULL) ]} to filter_function2 => 1:4,7:*
-            foreach ($docvar_filters as $k => $v) {
+            foreach ($function_filters as $k => $v) {
                 $params["filter_function" . strval($k)] = implode(array_map('indextank_map_range', $v), ",");
             }
         }
