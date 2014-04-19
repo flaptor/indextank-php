@@ -92,6 +92,12 @@ class Indextank_Api
         curl_setopt($session, CURLOPT_RETURNTRANSFER, true); // Tell curl to return the response
         curl_setopt($session, CURLOPT_HTTPHEADER, array('Expect:')); //Fixes the HTTP/1.1 417 Expectation Failed
 
+        $user = parse_url($url, PHP_URL_USER);
+		$pass = parse_url($url, PHP_URL_PASS);
+		if ($pass !== false && ! empty ($pass)) {
+			curl_setopt($session, CURLOPT_USERPWD, $user . ':' . $pass);
+		}
+
         foreach ($http_options as $curlopt => $value) {
             curl_setopt($session, $curlopt, $value);
         }
