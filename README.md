@@ -32,3 +32,27 @@ But here is the list of classes that changed their names:
 Documentation:
 -------
 [http://indextank.com/documentation/php-client](See the updated documentation on this client)
+
+
+Installation with composer:
+-------
+
+Add the dependency to your composer.json file :
+
+``` json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/flaptor/indextank-php"
+        }
+    ],
+    "require": {
+        "flaptor/indextank-php": "dev-master"
+    }
+}
+```
+
+Then run the composer update command.
+
+Note : the package is not yet registered in packagist so you must add the repositories configuration
