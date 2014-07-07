@@ -1,0 +1,14 @@
+{
+    "name": "flaptor/indextank-php",
+    "type": "library",
+    "description": "PHP Client for the IndexTank API",
+    "keywords": ["Indextank", "PHP", "Client", "Search"],
+    "homepage": "http://www.searchify.com/documentation/php-client",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "psr-0": { "Indextank_": "" }
+    }
+}
