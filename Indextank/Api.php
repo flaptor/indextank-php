@@ -74,11 +74,11 @@ class Indextank_Api
     {
         if ($method == "GET" || $method == "DELETE") {
             $args = http_build_query($params);
-            
+
             // remove the php special encoding of parameters
             // see http://www.php.net/manual/en/function.http-build-query.php#78603
             $args = preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', $args);
-            
+
             $url .= '?' . $args;
             $args = '';
         } else {
@@ -93,10 +93,10 @@ class Indextank_Api
         curl_setopt($session, CURLOPT_HTTPHEADER, array('Expect:')); //Fixes the HTTP/1.1 417 Expectation Failed
 
         $user = parse_url($url, PHP_URL_USER);
-		$pass = parse_url($url, PHP_URL_PASS);
-		if ($pass !== false && ! empty ($pass)) {
-			curl_setopt($session, CURLOPT_USERPWD, $user . ':' . $pass);
-		}
+        $pass = parse_url($url, PHP_URL_PASS);
+        if ($pass !== false && ! empty ($pass)) {
+            curl_setopt($session, CURLOPT_USERPWD, $user . ':' . $pass);
+        }
 
         foreach ($http_options as $curlopt => $value) {
             curl_setopt($session, $curlopt, $value);
